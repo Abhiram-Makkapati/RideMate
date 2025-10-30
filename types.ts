@@ -11,6 +11,8 @@ export interface UserProfile {
   username: string;
   avatarUrl: string;
   memberSince: string;
+  role: 'passenger' | 'driver';
+  isVerifiedDriver: boolean;
 }
 
 // User is simpler, for passengers etc.

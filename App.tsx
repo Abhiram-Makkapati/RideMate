@@ -13,12 +13,45 @@ import { Toast, ToastType } from './components/Toast';
 import { RideTrackingView } from './components/RideTrackingView';
 import { ChatsListView } from './components/ChatsListView';
 import { ChatView } from './components/ChatView';
+import { DriverVerificationModal } from './components/DriverVerificationModal';
+import { ShieldCheck, Car } from 'lucide-react';
+
 
 const mockUserProfile: UserProfile = {
   name: 'Alex Doe',
   username: 'alex.doe',
   avatarUrl: 'https://picsum.photos/seed/alex/200/200',
   memberSince: '2023-08-15T12:00:00Z',
+  role: 'driver',
+  isVerifiedDriver: true,
+};
+
+// Modal for prompting passengers to become drivers
+const BecomeDriverModal: React.FC<{ onConfirm: () => void; onClose: () => void; }> = ({ onConfirm, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+        <div className="p-6 text-center">
+            <div className="mx-auto bg-primary/10 text-primary w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                <Car size={32} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">Become a Driver</h2>
+            <p className="text-gray-600 mt-2">
+                To offer rides and start earning, you need to complete your driver profile. This involves a quick verification process, including providing your driver's license for community safety.
+            </p>
+        </div>
+        <div className="bg-gray-50 p-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+             <button onClick={onClose} className="w-full sm:w-auto px-5 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+                Maybe Later
+             </button>
+             <button onClick={onConfirm} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors">
+                <ShieldCheck size={20} />
+                <span>Start Verification</span>
+             </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 
@@ -29,6 +62,9 @@ export default function App() {
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
   const [confirmedRide, setConfirmedRide] = useState<Ride | null>(null);
   const [chatPartner, setChatPartner] = useState<Driver | null>(null);
+  
+  const [showDriverPrompt, setShowDriverPrompt] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
@@ -43,10 +79,18 @@ export default function App() {
     showToast('Welcome back, Alex!', 'success');
   };
 
-  const handleRegister = () => {
-    setUser(mockUserProfile);
+  const handleRegister = (name: string, role: 'passenger' | 'driver') => {
+    const newUserProfile: UserProfile = {
+      name: name,
+      username: name.toLowerCase().replace(/\s+/g, '.').replace(/[^a-z0-9.]/g, ''),
+      avatarUrl: `https://picsum.photos/seed/${name.replace(/\s+/g, '')}/200/200`,
+      memberSince: new Date().toISOString(),
+      role: role,
+      isVerifiedDriver: role === 'driver',
+    };
+    setUser(newUserProfile);
     setView('finder');
-    showToast('Account created successfully!', 'success');
+    showToast(`Welcome, ${name}! Your account has been created.`, 'success');
   };
   
   const handleLogout = () => {
@@ -79,6 +123,29 @@ export default function App() {
     setView('chat');
   };
 
+  const handleNavigation = (targetView: View) => {
+    if (targetView === 'driver' && user && !user.isVerifiedDriver) {
+      setShowDriverPrompt(true);
+    } else {
+      setView(targetView);
+    }
+  };
+  
+  const handleStartVerification = () => {
+    setShowDriverPrompt(false);
+    setShowVerificationModal(true);
+  };
+  
+  const handleVerificationSubmit = () => {
+    if (user) {
+        setUser({ ...user, role: 'driver', isVerifiedDriver: true });
+        setShowVerificationModal(false);
+        setView('driver');
+        showToast('Verification successful! You can now offer rides.', 'success');
+    }
+  };
+
+
   const renderView = () => {
     switch (view) {
       case 'login':
@@ -94,13 +161,13 @@ export default function App() {
             setView('login');
             return null;
         }
-        return <ProfileView user={user} onLogout={handleLogout} />;
+        return <ProfileView user={user} onLogout={handleLogout} onNavigate={handleNavigation} />;
       case 'tracking':
         if (!confirmedRide) {
             setView('finder');
             return null;
         }
-        return <RideTrackingView ride={confirmedRide} onNavigateHome={() => setView('finder')} onStartChat={handleStartChat} onCancelRide={handleCancelRide} />;
+        return <RideTrackingView ride={confirmedRide} onNavigateHome={() => handleNavigation('finder')} onStartChat={handleStartChat} onCancelRide={handleCancelRide} />;
       case 'chats':
         return <ChatsListView onSelectChat={handleStartChat} />;
       case 'chat':
@@ -124,8 +191,8 @@ export default function App() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <Header onNavigateHome={() => setView('finder')} />
-      <SidebarNav currentView={view} setCurrentView={setView} user={user} onLogout={handleLogout} />
+      <Header onNavigateHome={() => handleNavigation('finder')} />
+      <SidebarNav currentView={view} onNavigate={handleNavigation} user={user} onLogout={handleLogout} />
       
       <main className="md:ml-64 pt-24 pb-24 md:pb-12 px-4 md:px-8">
         <div className="max-w-4xl mx-auto">
@@ -133,7 +200,7 @@ export default function App() {
         </div>
       </main>
       
-      <Footer currentView={view} setCurrentView={setView} />
+      <Footer currentView={view} onNavigate={handleNavigation} user={user} />
 
       {selectedRide && (
         <RideConfirmationModal
@@ -142,6 +209,21 @@ export default function App() {
           onClose={() => setSelectedRide(null)}
         />
       )}
+
+      {showDriverPrompt && (
+        <BecomeDriverModal
+            onClose={() => setShowDriverPrompt(false)}
+            onConfirm={handleStartVerification}
+        />
+      )}
+      
+      {showVerificationModal && (
+        <DriverVerificationModal
+            onClose={() => setShowVerificationModal(false)}
+            onSubmit={handleVerificationSubmit}
+        />
+      )}
+
 
       {toast && (
         <Toast

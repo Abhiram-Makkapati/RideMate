@@ -1,11 +1,12 @@
 import React from 'react';
-import type { UserProfile } from '../types';
+import type { UserProfile, View } from '../types';
 import { RideHistoryList } from './RideHistoryList';
 import { LogOut, Award, Car, Users } from 'lucide-react';
 
 interface ProfileViewProps {
     user: UserProfile;
     onLogout: () => void;
+    onNavigate: (view: View) => void;
 }
 
 const StatCard: React.FC<{ icon: React.ReactNode; value: string; label: string; }> = ({ icon, value, label }) => (
@@ -19,7 +20,7 @@ const StatCard: React.FC<{ icon: React.ReactNode; value: string; label: string; 
 );
 
 
-export const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout }) => {
+export const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout, onNavigate }) => {
     const memberSince = new Date(user.memberSince).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -41,6 +42,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, onLogout }) => {
                     <StatCard icon={<Users className="h-8 w-8 text-secondary" />} value="8" label="Rides Taken" />
                 </div>
             </div>
+
+            {!user.isVerifiedDriver && (
+                <div className="p-6 bg-primary/10 rounded-xl shadow-lg text-center">
+                    <h3 className="text-xl font-bold text-primary-dark">Want to offer rides?</h3>
+                    <p className="text-gray-600 mt-2 mb-4">Complete your driver profile to start earning by sharing your rides with the community.</p>
+                    <button
+                        onClick={() => onNavigate('driver')}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-dark transition-colors mx-auto"
+                    >
+                        <Car size={20} />
+                        <span>Become a Driver</span>
+                    </button>
+                </div>
+            )}
 
             <RideHistoryList />
 

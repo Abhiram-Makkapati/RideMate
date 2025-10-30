@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Car, User, Mail, KeyRound, Calendar, ShieldCheck, FileUp, Camera } from 'lucide-react';
 
 interface RegisterViewProps {
-  onRegister: () => void;
+  onRegister: (name: string, role: 'passenger' | 'driver') => void;
   onNavigateLogin: () => void;
 }
 
@@ -15,6 +15,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegister, onNaviga
     setError(null);
     
     const formData = new FormData(e.currentTarget);
+    const fullName = formData.get('fullName') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
     const dob = formData.get('dob') as string;
@@ -42,7 +43,7 @@ export const RegisterView: React.FC<RegisterViewProps> = ({ onRegister, onNaviga
       return;
     }
 
-    onRegister();
+    onRegister(fullName, role);
   };
 
   return (

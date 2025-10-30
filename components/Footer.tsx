@@ -1,10 +1,11 @@
 import React from 'react';
-import type { View } from '../types';
+import type { View, UserProfile } from '../types';
 import { Search, PlusCircle, User, MessageSquare } from 'lucide-react';
 
 interface FooterProps {
   currentView: View;
-  setCurrentView: (view: View) => void;
+  onNavigate: (view: View) => void;
+  user: UserProfile;
 }
 
 const NavButton: React.FC<{
@@ -29,7 +30,7 @@ const NavButton: React.FC<{
   );
 };
 
-export const Footer: React.FC<FooterProps> = ({ currentView, setCurrentView }) => {
+export const Footer: React.FC<FooterProps> = ({ currentView, onNavigate, user }) => {
   return (
     <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden z-10">
       <div className="container mx-auto px-4 py-2 flex justify-around items-center gap-2">
@@ -37,25 +38,27 @@ export const Footer: React.FC<FooterProps> = ({ currentView, setCurrentView }) =
           icon={<Search size={24} />}
           label="Find"
           isActive={currentView === 'finder'}
-          onClick={() => setCurrentView('finder')}
+          onClick={() => onNavigate('finder')}
         />
-        <NavButton
-          icon={<PlusCircle size={24} />}
-          label="Offer"
-          isActive={currentView === 'driver'}
-          onClick={() => setCurrentView('driver')}
-        />
+        {user.isVerifiedDriver && (
+            <NavButton
+              icon={<PlusCircle size={24} />}
+              label="Offer"
+              isActive={currentView === 'driver'}
+              onClick={() => onNavigate('driver')}
+            />
+        )}
         <NavButton
           icon={<MessageSquare size={24} />}
           label="Chats"
           isActive={currentView === 'chats' || currentView === 'chat'}
-          onClick={() => setCurrentView('chats')}
+          onClick={() => onNavigate('chats')}
         />
         <NavButton
           icon={<User size={24} />}
           label="Profile"
           isActive={currentView === 'profile'}
-          onClick={() => setCurrentView('profile')}
+          onClick={() => onNavigate('profile')}
         />
       </div>
     </footer>

@@ -4,7 +4,7 @@ import { Search, PlusCircle, User, Car, LogOut, MessageSquare } from 'lucide-rea
 
 interface SidebarNavProps {
   currentView: View;
-  setCurrentView: (view: View) => void;
+  onNavigate: (view: View) => void;
   user: UserProfile;
   onLogout: () => void;
 }
@@ -31,7 +31,7 @@ const SidebarButton: React.FC<{
   );
 };
 
-export const SidebarNav: React.FC<SidebarNavProps> = ({ currentView, setCurrentView, user, onLogout }) => {
+export const SidebarNav: React.FC<SidebarNavProps> = ({ currentView, onNavigate, user, onLogout }) => {
   return (
     <aside className="fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg z-20 hidden md:flex flex-col">
         <div className="p-6 border-b">
@@ -48,25 +48,27 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ currentView, setCurrentV
                 icon={<Search size={20} />} 
                 label="Find a Ride" 
                 isActive={currentView === 'finder'} 
-                onClick={() => setCurrentView('finder')} 
+                onClick={() => onNavigate('finder')} 
             />
-             <SidebarButton 
-                icon={<PlusCircle size={20} />} 
-                label="Offer a Ride" 
-                isActive={currentView === 'driver'} 
-                onClick={() => setCurrentView('driver')} 
-            />
+            {user.isVerifiedDriver && (
+                <SidebarButton 
+                    icon={<PlusCircle size={20} />} 
+                    label="Offer a Ride" 
+                    isActive={currentView === 'driver'} 
+                    onClick={() => onNavigate('driver')} 
+                />
+            )}
             <SidebarButton 
                 icon={<MessageSquare size={20} />} 
                 label="Chats" 
                 isActive={currentView === 'chats' || currentView === 'chat'} 
-                onClick={() => setCurrentView('chats')} 
+                onClick={() => onNavigate('chats')} 
             />
              <SidebarButton 
                 icon={<User size={20} />} 
                 label="My Profile" 
                 isActive={currentView === 'profile'} 
-                onClick={() => setCurrentView('profile')} 
+                onClick={() => onNavigate('profile')} 
             />
         </nav>
         
