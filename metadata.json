@@ -1,0 +1,7 @@
+{
+  "name": "RideMate – Smart Shared Rides for Dallas",
+  "description": "A modern, user-friendly Shared Ride & Mobility Support App for the Dallas metro area. This app helps residents share rides, reduce traffic congestion, and make local transportation easier and more affordable.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
